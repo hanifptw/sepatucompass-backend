@@ -7,32 +7,41 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Shoes {
-  id           Int        @id @default(autoincrement())
-  name         String
-  imageURL     String     @db.VarChar(255)
-  price        Int?
-  size         String[]
-  description  String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt @default(now())
-  orderId      OrderShoes @relation(fields: [orderShoesId], references: [id])
-  orderShoesId Int
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  imageURL    String   @db.Text
+  price       Int
+  description String
+  sizes       String[]
+
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model OrderShoes {
-  id       Int      @id @default(autoincrement())
-  quantity Int?
+model OrderItem {
+  id String @id @default(cuid())
 
-  Shoes    Shoes[]
-  Orders   Orders[]
+  Product   Product @relation(fields: [productId], references: [id])
+  productId String
+
+  quantity Int @default(1)
+
+  Order   Order?  @relation(fields: [orderId], references: [id])
+  orderId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Orders {
-  id           Int        @id
-  status       String?
-  createdAt    DateTime @default(now())
+model Order {
+  id     String @id @default(cuid())
+  status String @default("CART")
 
-  orderId      OrderShoes @relation(fields: [orderShoesId], references: [id])
-  orderShoesId Int
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
