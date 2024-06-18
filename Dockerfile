@@ -1,9 +1,6 @@
 # Use Bun image from the Docker Hub
 FROM oven/bun:debian
 
-# Set PORT
-ENV PORT=3000
-
 # Create and change to the app directory
 WORKDIR /usr/src/app
 
