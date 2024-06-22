@@ -1,8 +1,12 @@
 import { Hono } from "hono";
+import { cors } from 'hono/cors'
+
 import { prisma } from "./lib/db";
 import { dataProducts } from "../data/products";
 
 const app = new Hono();
+
+app.use('/api/*', cors())
 
 // | `/products`     | `GET`    | `Get all products`      |
 // | `/products/:id` | `GET`    | `Get products by id`    |
