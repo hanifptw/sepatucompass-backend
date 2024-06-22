@@ -6,7 +6,7 @@ import { dataProducts } from "../data/products";
 
 const app = new Hono();
 
-app.use('/api/*', cors())
+app.use('/*', cors())
 
 // | `/products`     | `GET`    | `Get all products`      |
 // | `/products/:id` | `GET`    | `Get products by id`    |
