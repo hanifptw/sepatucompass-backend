@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from 'hono/cors'
 
 import { prisma } from "./lib/db";
-import { dataProducts } from "../data/products";
+import { dataProducts } from "../prisma/data/products";
 
 const app = new Hono();
 

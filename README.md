@@ -1,3 +1,7 @@
+# Sepatu Compass Backend
+
+## Getting Started
+
 To install dependencies:
 ```sh
 bun install
