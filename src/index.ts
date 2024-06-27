@@ -15,6 +15,8 @@ app.use('/*', cors())
 // | `/products/:id` | `DELETE` | `Delete products by id` |
 // | `/products/:id` | `PUT`    | `Update products by id` |
 
+   
+
 app.get("/", (c) => {
   return c.text("Sepatu Compass!");
 });
