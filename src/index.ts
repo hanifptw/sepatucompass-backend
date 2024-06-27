@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { bearerAuth } from "hono/bearer-auth";
 
 import { prisma } from "./lib/db";
 import { dataProducts } from "../prisma/data/products";
@@ -7,7 +8,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { hashPassword, verifyPassword } from "./lib/password";
 import { runInThisContext } from "vm";
-import { createToken } from "./lib/jwt";
+import { createToken, validateToken } from "./lib/jwt";
 
 const app = new Hono();
 
@@ -155,7 +156,36 @@ app.post(
 );
 
 app.get("/auth/me", async (c) => {
-  return c.json({ message: "user data" });
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader) {
+    c.status(401);
+    return c.json({ message: "Not allowed" });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    c.status(401);
+    return c.json({ message: "Token is required" });
+  }
+
+  const decodedToken = await validateToken(token);
+  if (!decodedToken) {
+    c.status(401);
+    return c.json({ message: "Token is invalid" });
+  }
+
+  console.log({ decodedToken });
+  const userId = decodedToken.subject;
+
+  if (!userId) {
+    c.status(401);
+    return c.json({ message: "UserID dosent exist" });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  return c.json({ message: "User Data", user });
 });
 
 app.get("/products", async (c) => {

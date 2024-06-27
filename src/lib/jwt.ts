@@ -1,5 +1,5 @@
 import { HMAC } from "oslo/crypto";
-import { createJWT, validateJWT } from "oslo/jwt";
+import { JWT, createJWT, validateJWT } from "oslo/jwt";
 import { TimeSpan } from "oslo";
 
 const getSecret = async () => {
@@ -18,8 +18,9 @@ export const createToken = async (subject: string) => {
   try {
     const jwt = await createJWT("HS256", secret, payload, {
       expiresIn: new TimeSpan(30, "d"),
-      subject,
       includeIssuedTimestamp: true,
+      subject,
+
     });
 
     return jwt;
@@ -30,13 +31,15 @@ export const createToken = async (subject: string) => {
   }
 };
 
+
+
 export const validateToken = async (token: string) => {
   const secret = await getSecret();
   try {
-    const result = validateJWT("HS256", secret, token);
+    const decodedToken = validateJWT("HS256", secret, token);
     // const message = jwt.payload.message;
 
-    return result;
+    return decodedToken;
   } catch (error) {
     console.error();
     return null;
