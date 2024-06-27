@@ -1,10 +1,10 @@
 import { type Product } from "@prisma/client";
 
-export type DataProducts = Omit<Product, "createdAt" | "updatedAt" >;
+export type DataProducts = Omit<Product, "createdAt" | "updatedAt">;
 
 export const dataProducts = [
   {
-   
+    slug: "gazille-low-back-white",
     name: "Gazille Low Back White",
     price: 408000,
     description:
@@ -14,6 +14,7 @@ export const dataProducts = [
     sizes: ["34", "35", "36", "37", "38", "39", "40", "41", "42"],
   },
   {
+    slug: "gazille-hi-back-white",
     name: "Gazille Hi Back White",
     price: 438000,
     description:
@@ -23,6 +24,7 @@ export const dataProducts = [
     sizes: ["34", "35", "36", "37", "38", "39", "40", "41", "42"],
   },
   {
+    slug: "retrograde-low-back-white",
     name: "Retrograde Low Black White",
     price: 538000,
     description:

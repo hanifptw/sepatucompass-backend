@@ -1,12 +1,15 @@
 import { Hono } from "hono";
-import { cors } from 'hono/cors'
+import { cors } from "hono/cors";
 
 import { prisma } from "./lib/db";
 import { dataProducts } from "../prisma/data/products";
+import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
+import { hashPassword } from "./lib/password";
 
 const app = new Hono();
 
-app.use('/*', cors())
+app.use("/*", cors());
 
 // | `/products`     | `GET`    | `Get all products`      |
 // | `/products/:id` | `GET`    | `Get products by id`    |
@@ -15,10 +18,107 @@ app.use('/*', cors())
 // | `/products/:id` | `DELETE` | `Delete products by id` |
 // | `/products/:id` | `PUT`    | `Update products by id` |
 
-   
+// | `/auth/register`   | `POST`   | Public        |
+// | `/auth/login`      | `POST`   | Public        |
+// | `/auth/me`         | `GET`    | Authenticated |
 
 app.get("/", (c) => {
   return c.text("Sepatu Compass!");
+});
+
+app.get("/users", async (c) => {
+  const users = await prisma.user.findMany({
+    select: {
+      id: true,
+      username: true,
+    },
+  });
+
+  return c.json(users);
+});
+
+app.get("/users/:username", async (c) => {
+  const username = c.req.param("username");
+
+  const user = await prisma.user.findUnique({
+    where: { username },
+    select: {
+      id: true,
+      username: true,
+      updatedAt: true,
+      createdAt: true,
+    },
+  });
+
+  if (!user) {
+    c.status(404);
+    c.json({ message: "user not found" });
+  }
+
+  return c.json(user);
+});
+
+app.post(
+  "/auth/register",
+  zValidator(
+    "json",
+    z.object({
+      username: z.string(),
+      email: z.string(),
+      password: z.string(),
+    })
+  ),
+  async (c) => {
+    const body = c.req.valid("json");
+
+    try {
+      const newUser = await prisma.user.create({
+        data: {
+          username: body.username,
+          email: body.email,
+          Password: {
+            create: {
+              hash: await hashPassword(body.password),
+            },
+          },
+        },
+      });
+      return c.json({
+        message: "new user has ben registered",
+        newUser: {
+          username: newUser.username,
+        },
+      });
+    } catch (error) {
+      c.status(400);
+      return c.json({ message: "cannot create user" });
+    }
+  }
+);
+
+app.post(
+  "/auth/login",
+  zValidator(
+    "json",
+    z.object({
+      username: z.string(),
+
+      password: z.string(),
+    })
+  ),
+  async (c) => {
+    const body = c.req.valid("json");
+
+    const foundUser = prisma.user.findUnique({
+      where: { username: body.username },
+    });
+
+    return c.json(foundUser);
+  }
+);
+
+app.get("/auth/me", async (c) => {
+  return c.json({ message: "user data" });
 });
 
 app.get("/products", async (c) => {
@@ -45,6 +145,7 @@ app.post("/products", async (c) => {
   const product = await prisma.product.create({
     data: {
       name: body.name,
+      slug: body.slug,
 
       imageURL: body.imageURL,
       price: body.price,

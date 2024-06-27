@@ -3,18 +3,20 @@
     "dev": "bun run --hot src/index.ts",
     "start": "bun run src/index.ts",
     "generate": "prisma generate",
-    "seed" : "prisma db seed",
-    "migrate:deploy":"prisma migrate deploy",
-    "migrate:dev":"prisma migrate dev",
-    "studio":"prisma studio"    
+    "seed": "prisma db seed",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:dev": "prisma migrate dev",
+    "studio": "prisma studio"
   },
   "prisma": {
-    "seed":"tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.2.2",
     "@prisma/client": "5.15.0",
     "@types/node": "^20.14.2",
-    "hono": "^4.4.5"
+    "hono": "^4.4.5",
+    "oslo": "^1.2.1"
   },
   "devDependencies": {
     "@types/bun": "latest",

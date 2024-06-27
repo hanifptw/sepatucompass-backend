@@ -6,7 +6,7 @@ import { dataProducts } from "./data/products";
 async function main() {
   for (const product of dataProducts) {
     const newProductResult = await prisma.product.upsert({
-      where: { id: product.id },
+      where: { slug: product.slug },
       update: product,
       create: product,
     });
