@@ -7,6 +7,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { hashPassword, verifyPassword } from "./lib/password";
 import { runInThisContext } from "vm";
+import { createToken } from "./lib/jwt";
 
 const app = new Hono();
 
@@ -85,7 +86,7 @@ app.post(
         },
       });
       return c.json({
-        message: "new user has ben registered",
+        message: "Register new user successfull",
         newUser: {
           username: newUser.username,
         },
@@ -137,8 +138,19 @@ app.post(
     }
 
     //create token
+    const token = await createToken(foundUser.id);
 
-    return c.json(foundUser);
+    if (!token) {
+      c.status(400);
+      return c.json({
+        message: "Token failed to create",
+      });
+    }
+
+    return c.json({
+      message: "Login Succesfull",
+      token,
+    });
   }
 );
 
