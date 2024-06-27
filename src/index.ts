@@ -5,7 +5,8 @@ import { prisma } from "./lib/db";
 import { dataProducts } from "../prisma/data/products";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { hashPassword } from "./lib/password";
+import { hashPassword, verifyPassword } from "./lib/password";
+import { runInThisContext } from "vm";
 
 const app = new Hono();
 
@@ -102,16 +103,40 @@ app.post(
     "json",
     z.object({
       username: z.string(),
-
       password: z.string(),
     })
   ),
   async (c) => {
     const body = c.req.valid("json");
 
-    const foundUser = prisma.user.findUnique({
+    const foundUser = await prisma.user.findUnique({
       where: { username: body.username },
+      include: {
+        Password: true,
+      },
     });
+
+    if (!foundUser) {
+      c.status(404);
+      return c.json({ message: "cannot login because user not found" });
+    }
+
+    if (!foundUser?.Password?.hash) {
+      c.status(404);
+      return c.json({ message: "cannot login because user not found" });
+    }
+
+    const validPassword = await verifyPassword(
+      foundUser.Password.hash,
+      body.password
+    );
+
+    if (!validPassword) {
+      c.status(400);
+      return c.json({ message: "Password, incorrect" });
+    }
+
+    //create token
 
     return c.json(foundUser);
   }
