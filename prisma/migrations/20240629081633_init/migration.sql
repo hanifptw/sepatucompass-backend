@@ -1,6 +1,7 @@
 -- CreateTable
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "imageURL" TEXT NOT NULL,
     "price" INTEGER NOT NULL,
@@ -53,6 +54,12 @@ CREATE TABLE "Password" (
 
     CONSTRAINT "Password_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Product_slug_key" ON "Product"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Product_name_key" ON "Product"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");

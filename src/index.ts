@@ -1,13 +1,12 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { bearerAuth } from "hono/bearer-auth";
 
 import { prisma } from "./lib/db";
 import { dataProducts } from "../prisma/data/products";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { hashPassword, verifyPassword } from "./lib/password";
-import { runInThisContext } from "vm";
+
 import { createToken, validateToken } from "./lib/jwt";
 
 const app = new Hono();
