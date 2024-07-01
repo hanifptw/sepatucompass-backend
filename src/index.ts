@@ -8,8 +8,19 @@ import { z } from "zod";
 import { hashPassword, verifyPassword } from "./lib/password";
 
 import { createToken, validateToken } from "./lib/jwt";
+import { checkServerIdentity } from "tls";
+import { checkUserToken } from "./middlewares/check-user-token";
+import { User } from "@prisma/client";
 
-const app = new Hono();
+type Bindings = {
+  TOKEN: string;
+};
+
+type Variables = {
+  user: User;
+};
+
+const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 app.use("/*", cors());
 
@@ -154,37 +165,47 @@ app.post(
   }
 );
 
-app.get("/auth/me", async (c) => {
-  const authHeader = c.req.header("Authorization");
-  if (!authHeader) {
-    c.status(401);
-    return c.json({ message: "Not allowed" });
-  }
-  const token = authHeader.split(" ")[1];
-  if (!token) {
-    c.status(401);
-    return c.json({ message: "Token is required" });
-  }
+//sampe sini 2jam 3 menit
+app.get("/auth/me", checkUserToken(), async (c) => {
+  const user = c.get("user");
 
-  const decodedToken = await validateToken(token);
-  if (!decodedToken) {
-    c.status(401);
-    return c.json({ message: "Token is invalid" });
-  }
+  return c.json({
+    message: "User Data",
+    user,
+  });
+});
 
-  console.log({ decodedToken });
-  const userId = decodedToken.subject;
+app.get("/cart", checkUserToken(), async (c) => {
+  const user = c.get("user");
 
-  if (!userId) {
-    c.status(401);
-    return c.json({ message: "UserID dosent exist" });
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  const existingOrderCart = await prisma.order.findFirst({
+    where: {
+      userId: user.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
-  return c.json({ message: "User Data", user });
+  if (!existingOrderCart) {
+    const newOrderCart = await prisma.order.create({
+      data: {
+        userId: user.id,
+      },
+    });
+
+    return c.json({
+      message: "shopping cart",
+      user,
+      cart: newOrderCart,
+    });
+  }
+
+  return c.json({
+    message: "shopping cart",
+    user,
+    cart: existingOrderCart,
+  });
 });
 
 app.get("/products", async (c) => {
