@@ -8,7 +8,6 @@ import { z } from "zod";
 import { hashPassword, verifyPassword } from "./lib/password";
 
 import { createToken, validateToken } from "./lib/jwt";
-import { checkServerIdentity } from "tls";
 import { checkUserToken } from "./middlewares/check-user-token";
 import { User } from "@prisma/client";
 
@@ -213,15 +212,12 @@ app.get("/products", async (c) => {
   return c.json(products);
 });
 
-app.get("/products/:id", async (c) => {
-  const id = String(c.req.param("id"));
+app.get("/products/:slug", async (c) => {
+  const slug = c.req.param("slug");
 
-  const product = await prisma.product.findUnique({ where: { id } });
-
-  if (!product) {
-    c.status(404);
-    return c.json({ message: "Products Not Found" });
-  }
+  const product = await prisma.product.findUnique({
+    where: { slug },
+  });
 
   return c.json(product);
 });
